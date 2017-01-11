@@ -22,16 +22,11 @@ with(p1, plot(date, steps, type = "h", xlab = "Days", ylab = "Step average", col
 
 And then calculate mean and median per day
 ```{r}
-tmp.mean <- aggregate(steps ~ date, act, mean, na.rm = TRUE)
-tmp.median <- aggregate(steps ~ date, act, median, na.rm = TRUE)
-
-p1$mean <- cbind(tmp.mean$steps)
-p1$median <- cbind(tmp.median$steps)
-
-library(knitr)
-kable(p1, caption = "Table 1. Step average and median per day")
+tmp.mean <- mean(p1$steps, na.rm = TRUE)
+tmp.median <- median(p1$steps, na.rm = TRUE)
 ```
 
+Daily average step counting is **`r paste(as.character(round(tmp.mean, 3)))`** and the median is **`r paste(as.character(round(tmp.median, 3)))`**
 
 ## What is the average daily activity pattern?
 Let's plot a time-series between average steps from the entire dataset and the period of the day.
@@ -65,15 +60,17 @@ miss.pct <- round(sum(is.na(act$steps)) / length(act$steps), 2) * 100
 There is a total of `r missing` missing entries, which represents `r miss.pct`% of the total observations. As this may lead to biased calculations, let's impute some values in the missing step count. We will use daily period step average to fill those gaps.
 
 ```{r}
+
 # Impute implementation for missing step values
 # Merge original dataset with the average step per period of the day - these will be the default values for the gaps
 act2 <- merge(act, p2, by = "interval", sort = FALSE)
 # Order the temporary dataset by date (merge by interval unsorted the dataset, which could cause problems in the replacements)
-act2 <- act2[order(act2$date),]
+act2 <- act2[order(act2$date), ]
 # Creates a list of the nee steps column in te final dataset, keeping the existing values and replacing the missing ones by its corresponding period's step average
-steps.new <-	replace(act2$steps, which(is.na(act2$steps)), act2$steps.mean[which(is.na(act2$steps))])
+steps.new <-
+replace(act2$steps, which(is.na(act2$steps)), act2$steps.mean[which(is.na(act2$steps))])
 # Creates the new final dataset without the step.mean column
-act.new <- act2[,1:3]
+act.new <- act2[, 1:3]
 # Replaces steps column with the replacement list
 act.new$steps <- steps.new
 ```
@@ -87,19 +84,16 @@ with(p3, plot(date, steps, type = "h", xlab = "Days", ylab = "Step average", col
 
 Comparing with the first graph, it is possible to notice less blank spaces between the hist bars, and the outliers become more visible (step counting in Oct 2nd and Nov 15th).
 
+
+And then calculate mean and median per day
 ```{r}
-# Calculate mean and median for the new dataset
-tmp.mean <- aggregate(steps ~ date, act.new, mean)
-tmp.median <- aggregate(steps ~ date, act.new, median)
-
-p3$act.mean <- cbind(tmp.mean$steps)
-p3$act.median <- cbind(tmp.median$steps)
-
-library(knitr)
-kable(p3, caption = "Table 2. Step average and median per day with the missing step counting replaced by daily period average")
+tmp.mean2 <- mean(p3$steps, na.rm = TRUE)
+tmp.median2 <- median(p3$steps, na.rm = TRUE)
 ```
 
-It is possible to notice that median values now appear more frequently.
+Daily average step counting is **`r paste(as.character(round(tmp.mean2, 3)))`** and the median is **`r paste(as.character(round(tmp.median2, 3)))`**
+
+Imputing the missing values did not change the average, but made the median to be equal to mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
